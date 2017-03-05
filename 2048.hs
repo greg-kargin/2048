@@ -1,4 +1,6 @@
 module Main where
+import Prelude hiding (Left, Right)
+import Data.List
 import System.IO
 import System.Random
 import Control.Monad.State
@@ -7,8 +9,19 @@ type Grid = [[Int]]
 type Coord = (Int, Int)
 data Move = Left | Right | Up | Down
 
-move :: Move -> Grid -> Maybe Grid
-move = undefined
+move :: Move -> Grid -> Grid
+move Left  grid = map swipe grid
+move Right grid = map (reverse.swipe.reverse) grid
+move Up    grid = transpose $ move Left $ transpose grid
+move Down  grid = transpose $ move Right $ transpose grid
+
+swipe :: [Int] -> [Int]
+swipe [] = []
+swipe (x:[]) = [x]
+swipe (0:xs) = swipe xs ++ [0]
+swipe (x:0:xs) = (swipe (x:xs)) ++ [0]
+swipe (x:y:xs) | x == y = ((2 * x) : (swipe xs)) ++ [0]
+               | otherwise = (x:(swipe (y:xs)))
 
 newTile :: Grid -> IO (Maybe Grid)
 newTile grid | emptyCells grid == [] = return Nothing
